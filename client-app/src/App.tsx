@@ -7,12 +7,23 @@ import axios from 'axios';
 
 function App() {
   const [activities, setActivities] = useState([]);
+
   useEffect(() => {
-    axios.get('http://localhost:5000/api/activities').then(response => {
-      console.log(response);
-      setActivities(response.data);
-    })
-  }, [])
+    fetchActivities();
+  }, []);
+
+  const fetchActivities = () => {
+    axios.get('http://localhost:5000/api/activities')
+      .then(response => {
+        console.log(response);
+        setActivities(response.data);
+      })
+      .catch(error => {
+        console.error('Error retrieving activities:', error);
+      });
+  };
+
+
   return (
     <div className="App">
       <header className="App-header">
@@ -28,11 +39,7 @@ function App() {
         >
           Learn React
         </a>
-      </header>
-      <body className="bangsat">
-        <h1>Bangsa</h1>
-        <img src={virus} alt="virus" />
-        <p>Hakim Was here</p>
+
         <ul>
           {activities.map((activity: any) => (
             <li key = {activity.id}>
@@ -40,7 +47,8 @@ function App() {
             </li>
           ))}
         </ul>
-      </body>
+      </header>
+      
     </div>
   );
 }
