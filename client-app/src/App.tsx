@@ -3,6 +3,7 @@ import logo from './logo.svg';
 import virus from './virus.png';
 import './App.css';
 import axios from 'axios';
+import { Button, Header, List } from 'semantic-ui-react';
 
 
 function App() {
@@ -15,7 +16,7 @@ function App() {
   const fetchActivities = () => {
     axios.get('http://localhost:5000/api/activities')
       .then(response => {
-        console.log(response);
+        
         setActivities(response.data);
       })
       .catch(error => {
@@ -25,20 +26,9 @@ function App() {
 
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload!!!.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+    <div >
+      <Header as='h2' icon='users' content='Reactivities'/>
+      <List>
 
         <ul>
           {activities.map((activity: any) => (
@@ -47,9 +37,10 @@ function App() {
             </li>
           ))}
         </ul>
-      </header>
-      
+        </List>
+       
     </div>
+    
   );
 }
 
