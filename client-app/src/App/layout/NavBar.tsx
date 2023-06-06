@@ -2,7 +2,11 @@ import React from 'react';
 import { Button, Container, Menu } from 'semantic-ui-react';
 import virus from './virus.png';
 
-export default function NavBar(){
+interface Props{
+    openForm: () => void;
+}
+
+export default function NavBar({openForm} : Props){
     return (
         <Menu inverted fixed = 'top'>
             <Container>
@@ -18,7 +22,7 @@ export default function NavBar(){
                 </Menu.Item>                  
                 <Menu.Item>
                     <a href="/contact" style={{ marginRight: '10px' }}>Contact</a>
-                    <Button positive content='Create Activity'/>
+                    <Button onClick={openForm} positive content='Create Activity'/>
                 </Menu.Item> 
             </Container>
         </Menu>
