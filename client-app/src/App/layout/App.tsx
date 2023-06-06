@@ -6,6 +6,7 @@ import { Activity } from '../models/activity';
 import NavBar from './NavBar';
 import ActivityDashboard from '../../features/activities/dashboard/ActivityDashboard';
 import {v4 as uuid} from 'uuid';
+import agent from '../api/agent';
 
 
 function App() {
@@ -14,19 +15,12 @@ function App() {
   const [editMode, seteditMode] = useState(false);
 
   useEffect(() => {
-    fetchActivities();
-  }, []);
+    agent.Activities.list().then(response => {
+      setActivities(response);
+    })
+  }, [])
 
-  const fetchActivities = () => {
-    axios.get<Activity[]>('http://localhost:5000/api/activities')
-      .then(response => {
-        
-        setActivities(response.data);
-      })
-      .catch(error => {
-        console.error('Error retrieving activities:', error);
-      });
-  };
+
 
   function handleSelectedActivity(id: string)
   {
