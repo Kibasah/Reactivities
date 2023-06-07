@@ -1,18 +1,28 @@
-import React from "react";
+import React, { SyntheticEvent, useState } from "react";
 import { Button, Item, Label, Segment } from "semantic-ui-react";
-import { Activity } from "../../../App/models/activity";
+import { useStore } from "../../../App/stores/store";
+import { observer } from "mobx-react-lite";
 
-interface Props {
-  activities: Activity[];
-  selectActivity : (id: string) => void;
-  deleteActivity: (id: string) => void;
-}
 
-export default function ActivityList({ activities, selectActivity, deleteActivity }: Props) {
+
+export default observer( function ActivityList() {
+  const {activityStore} = useStore();
+  const {deleteActivity, activitiesByDate, loading} = activityStore;
+
+  const [target, setTarget] = useState('');
+ 
+
+  function handleActivityDelete(e: SyntheticEvent<HTMLButtonElement>, id:string){
+    setTarget(e.currentTarget.name);
+    deleteActivity(id);
+  }
+
+  
+
   return (
     <Segment>
       <Item.Group divided>
-        {activities.map((activity) => (
+        {activitiesByDate.map((activity) => (
           <Item key={activity.id}>
 
             <Item.Content>
@@ -25,13 +35,16 @@ export default function ActivityList({ activities, selectActivity, deleteActivit
                 <div>
                   {activity.city}, {activity.venue}
                 </div>
-                <Button onClick={() => selectActivity(activity.id)}
+                <Button onClick={() => activityStore.selectActivity(activity.id)}
                   floated="right"
                   content="View"
                   color="blue"
                   compact
                 />
-                <Button onClick={() => deleteActivity(activity.id)}
+                <Button 
+                  name={activity.id}
+                  loading = {loading && target === activity.id} 
+                  onClick={(e) => handleActivityDelete(e, activity.id)}
                   floated="right"
                   content="Delete"
                   color="red"
@@ -45,4 +58,4 @@ export default function ActivityList({ activities, selectActivity, deleteActivit
       </Item.Group>
     </Segment>
   );
-}
+})
