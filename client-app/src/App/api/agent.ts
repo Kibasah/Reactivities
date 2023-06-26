@@ -1,6 +1,9 @@
 import axios, {AxiosResponse} from "axios";
 import { Activity } from "../models/activity";
 import { error } from "console";
+import { User, UserFormValues } from "../models/user";
+import { store } from "../stores/store";
+import { Photo, Profile, UserActivity } from "../models/profile";
 
 const sleep = (delay: number) => {
     return new Promise(resolve => setTimeout(resolve, delay));
@@ -8,6 +11,12 @@ const sleep = (delay: number) => {
 
 
 axios.defaults.baseURL = 'http://localhost:5000/api';
+
+axios.interceptors.request.use(config => {
+    const token = store.commonStore.token;
+    if (token && config.headers) config.headers.Authorization = `Bearer ${token}`;
+    return config; 
+})
 
 axios.interceptors.response.use(async response => {
     try {
@@ -37,8 +46,35 @@ const Activities = {
     delete: (id: string) => axios.delete<void>(`/activities/${id}`),
 }
 
+const Account = {
+    current: () => requests.get<User>('/account'),
+    login: (user: UserFormValues) => requests.post<User>('/account/login' , user),
+    register: (user: UserFormValues) => requests.post<User>('/account/register' , user)
+}
+
+const Profiles = {
+    get: (username: string) => requests.get<Profile>(`/profiles/${username}`),
+    uploadPhoto: (file: any) => {
+        let formData = new FormData();
+        formData.append('File', file);
+        return axios.post<Photo>('photos', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        })
+    },
+    setMainPhoto: (id: string) => axios.post(`/photos/${id}/setMain`, {}),
+    deletePhoto: (id: string) => axios.delete(`/photos/${id}`),
+    updateProfile: (profile: Partial<Profile>) => requests.put(`/profiles`, profile),
+    updateFollowing: (username: string) => requests.post(`/follow/${username}`, {}),
+    listFollowings: (username: string, predicate: string) => requests
+        .get<Profile[]>(`/follow/${username}?predicate=${predicate}`),
+    listActivities: (username: string, predicate: string) =>
+        requests.get<UserActivity[]>(`/profiles/${username}/activities?predicate=${predicate}`)
+}
+
 const agent = {
-    Activities
+    Activities,
+    Account,
+    Profiles
 }
 
 export default agent;

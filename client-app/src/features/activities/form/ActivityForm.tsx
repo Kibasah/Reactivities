@@ -1,74 +1,177 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Button, Form, Segment } from "semantic-ui-react";
-import { useStore } from "../../../App/stores/store";
 import { observer } from "mobx-react-lite";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { v4 as uuid } from "uuid";
+
+import { useStore } from "../../../App/stores/store";
 import { Activity } from "../../../App/models/activity";
 import LoadingComponent from "../../../App/layout/LoadingComponent";
-import { v4 as uuid} from'uuid';
 
+const ActivityForm: React.FC = observer(() => {
+  const { activityStore } = useStore();
+  const {
+    createActivity,
+    updateActivity,
+    loading,
+    loadActivity,
+    loadingInitial,
+  } = activityStore;
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-export default observer( function ActivityForm (){
+  const validationSchema = Yup.object({
+    title: Yup.string().required("Title is required"),
+    date: Yup.string().required("Date is required"),
+    category: Yup.string().required("Agensi is required"),
+    city: Yup.string().required("Isu is required"),
+    venue: Yup.string().required("Penyelesaian is required"),
+    description: Yup.string().required("Catatan is required"),
+  });
 
-const {activityStore} = useStore();
-const {selectedActivity,  createActivity, updateActivity, loading, loadActivity, loadingInitial} = activityStore;
-const {id} = useParams();
-const navigate = useNavigate();
+  const formik = useFormik({
+    initialValues: {
+      id: '',
+      title: '',
+      category: '',
+      description: '',
+      date: '',
+      city: '',
+      venue: '',
+    },
+    validationSchema: validationSchema,
+    onSubmit: async (values) => {
+      if (!values.id) {
+        values.id = uuid();
+        await createActivity(values);
+        navigate(`/activities/${values.id}`);
+      } else {
+        await updateActivity(values);
+        navigate(`/activities/${values.id}`);
+      }
+    },
+  });
 
-const [activity, setActivity] = useState<Activity>({
+  const {
+    handleSubmit,
+    handleChange,
+    handleBlur,
+    values,
+    touched,
+    errors,
+    isValid,
+    isSubmitting,
+    dirty,
+  } = formik;
 
-    id: '',
-    title: '',
-    category: '',
-    description: '',
-    date: '',
-    city: '',
-    venue: '',
-
-})
-
-useEffect(() => {
-    if (id) loadActivity(id).then(activity => setActivity(activity!))
-}, [id, loadActivity]);
-
-
-function handleSubmit() {
-    
-    if (!activity.id) {
-        activity.id = uuid();
-        createActivity(activity).then(() => navigate(`/activities/${activity.id}`))
+  useEffect(() => {
+    if (id) {
+      loadActivity(id).then((activity) => {
+        if (activity) {
+          formik.setValues(activity);
+        }
+      });
     }
-    else {
-        updateActivity(activity).then(() => navigate(`/activities/${activity.id}`))
-    }
-    
+  }, [id, loadActivity, formik]);
 
-}
+  if (loadingInitial) return <LoadingComponent content="Loading activity..." />;
 
+  return (
+    <Segment clearing>
+      <Form onSubmit={handleSubmit} autoComplete="off">
+        <Form.Input
+          placeholder="Tajuk"
+          name="title"
+          value={values.title}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={touched.title && !!errors.title}
+        />
+        {touched.title && errors.title && (
+          <div className="ui pointing below prompt label">{errors.title}</div>
+        )}
 
-function handleInputChange(event : ChangeEvent<HTMLInputElement | HTMLTextAreaElement>){
-    const {name, value} = event.target;
-    setActivity({...activity, [name]: value})
+        <Form.TextArea
+          placeholder="Catatan"
+          name="description"
+          value={values.description}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={touched.description && !!errors.description}
+        />
+        {touched.description && errors.description && (
+          <div className="ui pointing below prompt label">{errors.description}</div>
+        )}
 
-}
+        <Form.Input
+          placeholder="Agensi"
+          name="category"
+          value={values.category}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={touched.category && !!errors.category}
+        />
+        {touched.category && errors.category && (
+          <div className="ui pointing below prompt label">{errors.category}</div>
+        )}
 
-if (loadingInitial) return <LoadingComponent content = 'Loading activity...'/>
+        <Form.Input
+          type="date"
+          placeholder="Tarikh"
+          name="date"
+          value={values.date}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={touched.date && !!errors.date}
+        />
+        {touched.date && errors.date && (
+          <div className="ui pointing below prompt label">{errors.date}</div>
+        )}
 
-    return (
-        <Segment clearing>
-            <Form onSubmit={handleSubmit} autoComplete= 'off'>
-                <Form.Input placeholder = 'Title' value={activity.title} name='title' onChange={handleInputChange}/>
-                <Form.TextArea placeholder = 'Description' value={activity.description} name='description' onChange={handleInputChange}/>
-                <Form.Input placeholder = 'Category' value={activity.category} name='category' onChange={handleInputChange}/>
-                <Form.Input type='date' placeholder = 'Date' value={activity.date} name='date' onChange={handleInputChange}/>
-                <Form.Input placeholder = 'City' value={activity.city} name='city' onChange={handleInputChange}/>
-                <Form.Input placeholder = 'Venue' value={activity.venue} name='venue' onChange={handleInputChange}/>
+        <Form.Input
+          placeholder="Isu"
+          name="city"
+          value={values.city}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={touched.city && !!errors.city}
+        />
+        {touched.city && errors.city && (
+          <div className="ui pointing below prompt label">{errors.city}</div>
+        )}
 
-                <Button loading = {loading} floated = 'right' positive type='submit' content='Submit'/>
-                <Button as = {Link} to = '/activities' floated = 'right' type='button' content='Cancel'/>
-            </Form>
-        </Segment>
-    
-    )
+        <Form.Input
+          placeholder="Penyelesaian"
+          name="venue"
+          value={values.venue}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={touched.venue && !!errors.venue}
+        />
+        {touched.venue && errors.venue && (
+          <div className="ui pointing below prompt label">{errors.venue}</div>
+        )}
 
-})
+        <Button
+          loading={loading}
+          floated="right"
+          positive
+          type="submit"
+          content="Hantar"
+          disabled={!isValid || isSubmitting || !dirty}
+        />
+        <Button
+          as={Link}
+          to="/activities"
+          floated="right"
+          type="button"
+          content="Batal"
+        />
+      </Form>
+    </Segment>
+  );
+});
+
+export default ActivityForm;
