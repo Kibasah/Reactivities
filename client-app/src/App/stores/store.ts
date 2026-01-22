@@ -1,9 +1,11 @@
 import ActivityStore from "./activityStore";
-import {createContext, useContext} from "react";
+import { createContext, useContext } from "react";
 import CommonStore from "./commonStore";
 import UserStore from "./userStore";
 import ModalStore from "./modalStore";
 import ProfileStore from "./profileStore";
+import KesedaranStore from "./kesedaranStore";
+import PemantauanStore from "./pemantauanStore";
 
 
 interface Store {
@@ -12,7 +14,8 @@ interface Store {
     userStore: UserStore;
     modalStore: ModalStore;
     profileStore: ProfileStore;
-   
+    kesedaranStore: KesedaranStore;
+    pemantauanStore: PemantauanStore;
 }
 
 export const store: Store = {
@@ -21,7 +24,8 @@ export const store: Store = {
     userStore: new UserStore(),
     modalStore: new ModalStore(),
     profileStore: new ProfileStore(),
-   
+    kesedaranStore: new KesedaranStore(),
+    pemantauanStore: new PemantauanStore(),
 }
 
 export const StoreContext = createContext(store);

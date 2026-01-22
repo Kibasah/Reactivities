@@ -1,87 +1,89 @@
 import React, { useEffect, useState } from 'react';
-import { Grid, Header, Card, Button, Accordion, Icon } from 'semantic-ui-react';
-import axios from 'axios';
+import { Grid, Header, Card, Button, Accordion, Icon, Container } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
+import { useStore } from '../../../App/stores/store';
+import { observer } from 'mobx-react-lite';
+import LoadingComponent from '../../../App/layout/LoadingComponent';
 
-interface Pemantauan {
-  id: string;
-  title: string;
-  date: string;
-  description: string;
-}
-
-const PemantauanDashboard: React.FC = () => {
-  const [pemantauanList, setPemantauanList] = useState<Pemantauan[]>([]);
+export default observer(function PemantauanDashboard() {
+  const { pemantauanStore } = useStore();
+  const { pemantauanByDate, loadPemantauans, loadingInitial } = pemantauanStore;
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
 
   useEffect(() => {
-    // Fetch Pemantauan data from the API
-    const fetchPemantauan = async () => {
-      try {
-        const response = await axios.get<Pemantauan[]>('/pemantauan');
-        setPemantauanList(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
+    if (pemantauanStore.pemantauanRegistry.size <= 1) loadPemantauans();
+  }, [pemantauanStore.pemantauanRegistry.size, loadPemantauans]);
 
-    fetchPemantauan();
-  }, []);
+  const groupedPemantauan = pemantauanByDate.reduce((groups, p) => {
+    const title = p.title || 'Lain-lain';
+    if (!groups[title]) groups[title] = [];
+    groups[title].push(p);
+    return groups;
+  }, {} as { [key: string]: typeof pemantauanByDate });
 
-  // Group pemantauan items by title
-  const groupedPemantauan: { [title: string]: Pemantauan[] } = pemantauanList.reduce(
-    (groups, pemantauan) => {
-      if (!groups[pemantauan.title]) {
-        groups[pemantauan.title] = [];
-      }
-      groups[pemantauan.title].push(pemantauan);
-      return groups;
-    },
-    {} as { [title: string]: Pemantauan[] } // Provide initial value as an empty object
-  );
-
-  const handleAccordionClick = (index: number) => {
-    setActiveIndex(activeIndex === index ? undefined : index);
-  };
+  if (loadingInitial) return <LoadingComponent content='Sila tunggu...' />;
 
   return (
-    <Grid>
-      <Grid.Column width={16}>
-        <Header as="h1">Dashboard Pemantauan Repositori dan Port</Header>
-      </Grid.Column>
-      <Grid.Column width={16}>
-        {Object.entries(groupedPemantauan).map(([title, pemantauans], index) => (
-          <Accordion styled key={title} style={{ marginBottom: '1rem' }}>
-            <Accordion.Title active={activeIndex === index} onClick={() => handleAccordionClick(index)}>
-              <Header as="h3">{title}</Header>
-              <Icon name={activeIndex === index ? 'chevron up' : 'chevron down'} />
-            </Accordion.Title>
-            <Accordion.Content active={activeIndex === index}>
-              <Card.Group>
-                {pemantauans.map((pemantauan) => (
-                  <Card key={pemantauan.id}>
-                    <Card.Content>
-                      <Card.Header>{new Date(pemantauan.date).toLocaleDateString('en-GB')}</Card.Header>
-                      
-                      <Card.Description>{pemantauan.description}</Card.Description>
-                    </Card.Content>
-                    <Card.Content extra>
-                      <Button as={Link} to={`/edit/pemantauan/${pemantauan.id}`} primary>
-                        Kemaskini
-                      </Button>
-                    </Card.Content>
-                  </Card>
-                ))}
-              </Card.Group>
-            </Accordion.Content>
-          </Accordion>
-        ))}
-        <Button as={Link} to={`/createPemantauan`} primary>
-          Tambah
-        </Button>
-      </Grid.Column>
-    </Grid>
-  );
-};
+    <Container>
+      <Header as="h1" textAlign="center" style={{ marginBottom: '2rem' }}>
+        Pemantauan Repositori dan Port
+      </Header>
 
-export default PemantauanDashboard;
+      <Grid>
+        <Grid.Column width={16}>
+          {Object.entries(groupedPemantauan).map(([title, items], index) => (
+            <Accordion styled key={title} fluid style={{ marginBottom: '1rem', borderRadius: '12px' }}>
+              <Accordion.Title
+                active={activeIndex === index}
+                onClick={() => setActiveIndex(activeIndex === index ? undefined : index)}
+                style={{ fontSize: '1.2rem', fontWeight: 600, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                <span>{title}</span>
+                <Icon name={activeIndex === index ? 'chevron up' : 'chevron down'} />
+              </Accordion.Title>
+              <Accordion.Content active={activeIndex === index}>
+                <Card.Group itemsPerRow={3} stackable>
+                  {items.map((p) => (
+                    <Card key={p.id} style={{ boxShadow: 'none', border: '1px solid #e2e8f0' }}>
+                      <Card.Content>
+                        <Card.Header style={{ color: '#0d9488' }}>
+                          {new Date(p.date).toLocaleDateString('en-GB')}
+                        </Card.Header>
+                        <Card.Description style={{ marginTop: '10px' }}>
+                          {p.description}
+                        </Card.Description>
+                      </Card.Content>
+                      <Card.Content extra>
+                        <Button
+                          as={Link}
+                          to={`/edit/pemantauan/${p.id}`}
+                          basic
+                          color="teal"
+                          fluid
+                          content="Kemaskini"
+                        />
+                      </Card.Content>
+                    </Card>
+                  ))}
+                </Card.Group>
+              </Accordion.Content>
+            </Accordion>
+          ))}
+
+          <div style={{ marginTop: '30px', textAlign: 'center' }}>
+            <Button
+              as={Link}
+              to="/createPemantauan"
+              primary
+              size="huge"
+              icon="add"
+              content="Tambah Pemantauan"
+              style={{ borderRadius: '30px', paddingLeft: '30px', paddingRight: '30px' }}
+            />
+          </div>
+        </Grid.Column>
+      </Grid>
+    </Container>
+  );
+});
+

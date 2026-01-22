@@ -1,45 +1,36 @@
 import React from 'react';
-import { Button, Container, Menu, MenuItem, Image, Dropdown } from 'semantic-ui-react';
+import { Container, Menu, Image, Dropdown } from 'semantic-ui-react';
 import virus from './virus.png';
-import { Link, NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useStore } from '../stores/store';
-import { text } from 'stream/consumers';
 import { observer } from 'mobx-react-lite';
 
-interface Props{
-    openForm: () => void;
-}
-
-export default observer(function NavBar(){
-const {userStore: {user, logout}} = useStore();
+export default observer(function NavBar() {
+    const { userStore: { user, logout } } = useStore();
 
     return (
-        <Menu inverted fixed = 'top'>
+        <Menu inverted fixed='top' borderless>
             <Container>
-                <Menu.Item as = {NavLink} to = '/' header>
-                    <img src={virus} alt="logo" style={{ marginRight: '10px' }} />
-                    Pemantauan Pelaksanaan MyGovEA
+                <Menu.Item as={NavLink} to='/' header>
+                    <img src={virus} alt="logo" style={{ marginRight: '12px', height: '35px' }} />
+                    <span style={{ fontWeight: 600, fontSize: '1.1rem' }}>MyGovEA</span>
                 </Menu.Item>
-                
-                <Menu.Item as = {NavLink} to = '/activities' name = 'Peringkat'>
-                    <a>Pemantauan Pembangunan EA </a>
-                </Menu.Item>
-                <Menu.Item as = {NavLink} to = '/pemantauan' name = 'Activities'>
-                    <a>Pemantauan Repositori dan Port</a>
-                </Menu.Item>
-                <Menu.Item as = {NavLink} to = '/kesedaran' name = 'Activities'>
-                    <a>Program Kesedaran</a>
-                </Menu.Item>                  
-                
-                <MenuItem position='right'>
-                    <Image src = {user?.image || '/assets/user.png'} avatar spaced = 'right'/>
-                    <Dropdown pointing= 'top left' text = {user?.displayName}>
-                        <Dropdown.Menu>
-                        <Dropdown.Item as= {NavLink} to = {`/profiles/${user?.username}`} text = 'Profil' icon = 'user'/>
-                        <Dropdown.Item onClick={logout} text = 'logout' icon = 'power'/>
-                        </Dropdown.Menu>
-                    </Dropdown>
-                </MenuItem>
+
+                <Menu.Item as={NavLink} to='/activities' name='Pemantauan Pembangunan EA' />
+                <Menu.Item as={NavLink} to='/pemantauan' name='Repositori & Port' />
+                <Menu.Item as={NavLink} to='/kesedaran' name='Program Kesedaran' />
+
+                <Menu.Menu position='right'>
+                    <Menu.Item>
+                        <Image src={user?.image || '/assets/user.png'} avatar spaced='right' />
+                        <Dropdown pointing='top left' text={user?.displayName}>
+                            <Dropdown.Menu>
+                                <Dropdown.Item as={NavLink} to={`/profiles/${user?.username}`} text='Profil' icon='user' />
+                                <Dropdown.Item onClick={logout} text='Logout' icon='power' />
+                            </Dropdown.Menu>
+                        </Dropdown>
+                    </Menu.Item>
+                </Menu.Menu>
             </Container>
         </Menu>
     )

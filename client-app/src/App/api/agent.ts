@@ -1,9 +1,10 @@
-import axios, {AxiosResponse} from "axios";
+import axios, { AxiosResponse } from "axios";
 import { Activity } from "../models/activity";
-import { error } from "console";
 import { User, UserFormValues } from "../models/user";
 import { store } from "../stores/store";
 import { Photo, Profile, UserActivity } from "../models/profile";
+import { Kesedaran } from "../models/kesedaran";
+import { Pemantauan } from "../models/pemantauan";
 
 const sleep = (delay: number) => {
     return new Promise(resolve => setTimeout(resolve, delay));
@@ -15,7 +16,7 @@ axios.defaults.baseURL = 'http://localhost:5000/api';
 axios.interceptors.request.use(config => {
     const token = store.commonStore.token;
     if (token && config.headers) config.headers.Authorization = `Bearer ${token}`;
-    return config; 
+    return config;
 })
 
 axios.interceptors.response.use(async response => {
@@ -28,13 +29,13 @@ axios.interceptors.response.use(async response => {
     }
 })
 
-const responseBody = <T> (response: AxiosResponse<T>) => response.data;
+const responseBody = <T>(response: AxiosResponse<T>) => response.data;
 
 const requests = {
-    get:<T> (url: string) => axios.get<T>(url).then(responseBody),
-    post:<T> (url: string, body: {}) => axios.post<T>(url, body).then(responseBody),
-    put:<T> (url: string, body: {}) => axios.put<T>(url, body).then(responseBody),
-    del:<T> (url: string) => axios.delete<T>(url).then(responseBody),
+    get: <T>(url: string) => axios.get<T>(url).then(responseBody),
+    post: <T>(url: string, body: {}) => axios.post<T>(url, body).then(responseBody),
+    put: <T>(url: string, body: {}) => axios.put<T>(url, body).then(responseBody),
+    del: <T>(url: string) => axios.delete<T>(url).then(responseBody),
 }
 
 
@@ -48,8 +49,8 @@ const Activities = {
 
 const Account = {
     current: () => requests.get<User>('/account'),
-    login: (user: UserFormValues) => requests.post<User>('/account/login' , user),
-    register: (user: UserFormValues) => requests.post<User>('/account/register' , user)
+    login: (user: UserFormValues) => requests.post<User>('/account/login', user),
+    register: (user: UserFormValues) => requests.post<User>('/account/register', user)
 }
 
 const Profiles = {
@@ -71,10 +72,28 @@ const Profiles = {
         requests.get<UserActivity[]>(`/profiles/${username}/activities?predicate=${predicate}`)
 }
 
+const KesedaranAgent = {
+    list: () => requests.get<Kesedaran[]>('/kesedaran'),
+    details: (id: string) => requests.get<Kesedaran>(`/kesedaran/${id}`),
+    create: (kesedaran: Kesedaran) => requests.post<void>('/kesedaran', kesedaran),
+    update: (kesedaran: Kesedaran) => requests.put<void>(`/kesedaran/${kesedaran.id}`, kesedaran),
+    delete: (id: string) => requests.del<void>(`/kesedaran/${id}`),
+}
+
+const PemantauanAgent = {
+    list: () => requests.get<Pemantauan[]>('/pemantauan'),
+    details: (id: string) => requests.get<Pemantauan>(`/pemantauan/${id}`),
+    create: (pemantauan: Pemantauan) => requests.post<void>('/pemantauan', pemantauan),
+    update: (pemantauan: Pemantauan) => requests.put<void>(`/pemantauan/${pemantauan.id}`, pemantauan),
+    delete: (id: string) => requests.del<void>(`/pemantauan/${id}`),
+}
+
 const agent = {
     Activities,
     Account,
-    Profiles
+    Profiles,
+    Kesedaran: KesedaranAgent,
+    Pemantauan: PemantauanAgent
 }
 
 export default agent;

@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { Grid, Header, Form, Button, TextArea, Dropdown } from 'semantic-ui-react';
-import axios from 'axios';
+import { Grid, Header, Form, Button, TextArea, Dropdown, Segment } from 'semantic-ui-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { v4 as uuid } from 'uuid';
+import { useStore } from '../../../App/stores/store';
+import { observer } from 'mobx-react-lite';
 import { Kesedaran } from '../../../App/models/kesedaran';
 
-interface AddKesedaranPageProps {
-  // Props, if any
-}
-
-const AddKesedaranPage: React.FC<AddKesedaranPageProps> = () => {
+export default observer(function AddKesedaranPage() {
+  const { kesedaranStore } = useStore();
+  const { createKesedaran, loading } = kesedaranStore;
   const navigate = useNavigate();
+
   const [kesedaran, setKesedaran] = useState<Kesedaran>({
     id: '',
     title: '',
@@ -20,33 +19,15 @@ const AddKesedaranPage: React.FC<AddKesedaranPageProps> = () => {
     penyelesaian: '',
     catatan: '',
   });
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, data: any) => {
-    const { name, value } = data;
-    setKesedaran({
-      ...kesedaran,
-      [name]: value,
-    });
+  const handleInputChange = (event: any, data: any) => {
+    const { name, value } = data || event.target;
+    setKesedaran({ ...kesedaran, [name]: value });
   };
 
-  const handleAdd = async () => {
-    try {
-      const newKesedaran: Kesedaran = {
-        ...kesedaran,
-        id: uuid(), // Generate a unique ID for the new Kesedaran
-      };
-      await axios.post('/kesedaran', newKesedaran);
-      setSuccessMessage('Kesedaran added successfully.');
-      setTimeout(() => {
-        // Redirect to the KesedaranDashboard after 2 seconds
-        navigate('/kesedaran');
-      }, 2000);
-    } catch (error) {
-      console.log(error);
-      setErrorMessage('Failed to add Kesedaran. Please try again.');
-    }
+  const handleSubmit = async () => {
+    await createKesedaran(kesedaran);
+    navigate('/kesedaran');
   };
 
   const titleOptions = [
@@ -61,61 +42,76 @@ const AddKesedaranPage: React.FC<AddKesedaranPageProps> = () => {
   return (
     <Grid centered>
       <Grid.Column width={10}>
-        <Header as="h1">Add Kesedaran</Header>
-        {successMessage && <div>{successMessage}</div>}
-        {errorMessage && <div>{errorMessage}</div>}
-        <Form>
-          <Form.Field
-            control={Dropdown}
-            label="Title"
-            name="title"
-            selection
-            options={titleOptions}
-            value={kesedaran.title}
-            onChange={handleInputChange}
-          />
-          <Form.Input
-            label="Date"
-            name="date"
-            type="datetime-local"
-            value={kesedaran.date}
-            onChange={handleInputChange}
-          />
-          <Form.Input
-            label="Agensi"
-            name="agensi"
-            value={kesedaran.agensi}
-            onChange={handleInputChange}
-          />
-          <Form.Input
-            label="Isu"
-            name="isu"
-            value={kesedaran.isu}
-            onChange={handleInputChange}
-          />
-          <Form.Input
-            label="Penyelesaian"
-            name="penyelesaian"
-            value={kesedaran.penyelesaian}
-            onChange={handleInputChange}
-          />
-          <Form.Field
-            control={TextArea}
-            label="Catatan"
-            name="catatan"
-            value={kesedaran.catatan}
-            onChange={handleInputChange}
-          />
-          <Button primary onClick={handleAdd}>
-            Add
-          </Button>
-          <Button as={Link} to="/kesedaran" secondary>
-            Cancel
-          </Button>
-        </Form>
+        <Segment clearing style={{ borderRadius: '12px', border: 'none', boxShadow: 'var(--shadow-md)' }}>
+          <Header as="h2" content="Tambah Program Kesedaran" color="teal" textAlign="center" style={{ marginBottom: '1.5rem' }} />
+          <Form onSubmit={handleSubmit} autoComplete='off'>
+            <Form.Field
+              control={Dropdown}
+              label="Tajuk Program"
+              name="title"
+              selection
+              options={titleOptions}
+              value={kesedaran.title}
+              onChange={handleInputChange}
+              required
+            />
+            <Form.Input
+              label="Tarikh"
+              name="date"
+              type="date"
+              value={kesedaran.date}
+              onChange={handleInputChange}
+              required
+            />
+            <Form.Input
+              label="Agensi"
+              name="agensi"
+              placeholder="Contoh: MAMPU"
+              value={kesedaran.agensi}
+              onChange={handleInputChange}
+            />
+            <Form.Input
+              label="Isu / Perkara"
+              name="isu"
+              value={kesedaran.isu}
+              onChange={handleInputChange}
+            />
+            <Form.Input
+              label="Penyelesaian"
+              name="penyelesaian"
+              value={kesedaran.penyelesaian}
+              onChange={handleInputChange}
+            />
+            <Form.Field
+              control={TextArea}
+              label="Catatan"
+              name="catatan"
+              placeholder="Maklumat tambahan..."
+              value={kesedaran.catatan}
+              onChange={handleInputChange}
+              rows={3}
+            />
+            <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+              <Button
+                loading={loading}
+                primary
+                type="submit"
+                content="Simpan"
+                icon="save"
+                style={{ borderRadius: '8px' }}
+              />
+              <Button
+                as={Link}
+                to="/kesedaran"
+                basic
+                content="Batal"
+                style={{ borderRadius: '8px' }}
+              />
+            </div>
+          </Form>
+        </Segment>
       </Grid.Column>
     </Grid>
   );
-};
+});
 
-export default AddKesedaranPage;

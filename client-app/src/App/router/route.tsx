@@ -7,11 +7,10 @@ import ActivityDetails from "../../features/activities/details/ActivityDetails";
 import KesedaranDashboard from "../../features/activities/dashboard/KesedaranDashboard";
 import PemantauanDashboard from "../../features/activities/dashboard/PemantauanDashboard";
 import EditKesedaranPage from "../../features/activities/form/EditKesedaranone";
-import EditPemantauanPage from "../../features/activities/form/EditPemantauan";
+import AddKesedaranPage from "../../features/activities/form/AddKesedaran";
+import PemantauanForm from "../../features/activities/form/PemantauanForm";
 import LandingPeringkatPage from "../../features/activities/dashboard/PeringkatLanding";
 import LoginForm from "../../features/users/LoginForm";
-import CreatePemantauanPage from "../../features/activities/form/AddPemantauan";
-import AddKesedaranPage from "../../features/activities/form/AddKesedaran";
 import ProfilePage from "../../features/ProfilePage";
 
 export const routes: RouteObject[] = [
@@ -21,22 +20,23 @@ export const routes: RouteObject[] = [
     children: [
       { path: "peringkat", element: <LandingPeringkatPage /> },
       { path: "activities", element: <ActivityDashboard /> },
-      { path: "kesedaran", element: <KesedaranDashboard /> },
-      { path: "pemantauan", element: <PemantauanDashboard /> },
       { path: "activities/:id", element: <ActivityDetails /> },
       { path: "createActivity", element: <ActivityForm /> },
+      { path: "manage/:id", element: <ActivityForm key="manage" /> },
+
+      { path: "kesedaran", element: <KesedaranDashboard /> },
       { path: "tambahkesedaran", element: <AddKesedaranPage /> },
       { path: "edit/kesedaran/:id", element: <EditKesedaranPage /> },
-      // Route path for updating Pemantauan
-      { path: "edit/pemantauan/:id", element: <EditPemantauanPage /> },
-      { path: "manage/:id", element: <ActivityForm key="manage" /> },
+
+      { path: "pemantauan", element: <PemantauanDashboard /> },
+      { path: "createPemantauan", element: <PemantauanForm key='create' /> },
+      { path: "edit/pemantauan/:id", element: <PemantauanForm key='edit' /> },
+
       { path: "profiles/:username", element: <ProfilePage /> },
-      
       { path: "login", element: <LoginForm /> },
-      // Route path for creating Pemantauan
-      { path: "createPemantauan", element: <EditPemantauanPage /> },
     ],
   },
 ];
 
 export const router = createBrowserRouter(routes);
+
